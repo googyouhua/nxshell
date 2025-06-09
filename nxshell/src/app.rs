@@ -35,6 +35,7 @@ pub struct NxShellOptions {
     pub session_filter: String,
 
     pub side_panel: SidePanel,
+    pub show_right_panel: bool,
 }
 
 impl NxShellOptions {
@@ -123,6 +124,7 @@ impl eframe::App for NxShell {
             self.menubar(ui);
         });
 
+<<<<<<< HEAD
         if self.opts.side_panel.show_right_panel {
             let side_panel_response = egui::SidePanel::right("main_right_panel")
                 .resizable(true)
@@ -139,13 +141,30 @@ impl eframe::App for NxShell {
                                 self.opts.side_panel.show_right_panel = false;
                             }
                         });
+=======
+        if self.opts.show_right_panel {
+            egui::SidePanel::right("main_right_panel")
+                .resizable(true)
+                .width_range(200.0..=300.0)
+                .show(ctx, |ui| {
+                    ui.horizontal(|ui| {
+                        ui.with_layout(egui::Layout::left_to_right(egui::Align::TOP), |ui| {
+                            ui.label("Sessions");
+                        });
+                        // 可以在这里加一个按钮切换 show_right_panel
+                        if ui.button("隐藏").clicked() {
+                            self.opts.show_right_panel = false;
+                        }
+>>>>>>> aec4390 (SidePanel)
                     });
 
                     self.search_sessions(ui);
                     ui.separator();
                     self.list_sessions(ctx, ui, &mut toasts);
                 });
+        }
 
+<<<<<<< HEAD
             if side_panel_response.response.rect.width() <= SidePanel::CLOSE_WIDTH {
                 self.opts.side_panel.show_right_panel = false;
                 self.opts.side_panel.min_panel_width = SidePanel::DEFAULT_WIDTH;
@@ -154,9 +173,14 @@ impl eframe::App for NxShell {
             }
         }
 
+=======
+>>>>>>> aec4390 (SidePanel)
         egui::TopBottomPanel::bottom("main_bottom_panel").show(ctx, |ui| {
             ui.with_layout(egui::Layout::right_to_left(egui::Align::TOP), |ui| {
                 global_theme_switch(ui);
+                if ui.button("显示 Sessions 侧边栏").clicked() {
+                    self.opts.show_right_panel = true;
+                }
             });
         });
 
