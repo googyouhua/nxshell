@@ -28,6 +28,7 @@ enum TabInner {
 pub struct Tab {
     inner: TabInner,
     id: u64,
+    custom_title: Option<String>,
 }
 
 impl Tab {
@@ -56,6 +57,7 @@ impl Tab {
                 terminal_theme: TerminalTheme::default(),
                 term_type: typ,
             }),
+            custom_title: None,
         })
     }
 
@@ -65,6 +67,7 @@ impl Tab {
         Self {
             id,
             inner: TabInner::SessionList(SessionList {}),
+            custom_title: None,
         }
     }
 }
@@ -79,6 +82,9 @@ impl egui_dock::TabViewer for TabViewer<'_> {
     type Tab = Tab;
 
     fn title(&mut self, tab: &mut Self::Tab) -> egui::WidgetText {
+        if let Some(title) = &tab.custom_title {
+            return title.clone().into();
+        }
         let tab_id = tab.id();
         match &mut tab.inner {
             TabInner::Term(term) => match term.term_type {
@@ -151,6 +157,18 @@ impl egui_dock::TabViewer for TabViewer<'_> {
                     }
                 }
             }
+        }
+
+        if response.secondary_clicked() {
+            response
+                .ctx
+                .show_popup_above_widget(response.id.with("rename"), &response, |ui| {
+                    let title = tab.custom_title.get_or_insert_with(|| String::new());
+                    let resp = ui.text_edit_singleline(title);
+                    if resp.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+                        ui.memory_mut(|mem| mem.close_popup());
+                    }
+                });
         }
     }
 
