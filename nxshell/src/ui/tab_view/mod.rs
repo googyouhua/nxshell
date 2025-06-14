@@ -6,7 +6,7 @@ use crate::consts::GLOBAL_COUNTER;
 use crate::ui::tab_view::session::SessionList;
 use copypasta::ClipboardContext;
 use egui::{Label, Response, Sense, Ui};
-use egui_dock::{DockArea, Style};
+use egui_dock::{tab_viewer, DockArea, Style};
 use egui_phosphor::regular::{DRONE, NUMPAD};
 use egui_term::{
     Authentication, PtyEvent, TermType, Terminal, TerminalContext, TerminalOptions, TerminalTheme,
@@ -158,18 +158,36 @@ impl egui_dock::TabViewer for TabViewer<'_> {
                 }
             }
         }
+    }
 
-        if response.secondary_clicked() {
-            response
-                .ctx
-                .show_popup_above_widget(response.id.with("rename"), &response, |ui| {
-                    let title = tab.custom_title.get_or_insert_with(|| String::new());
-                    let resp = ui.text_edit_singleline(title);
-                    if resp.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
-                        ui.memory_mut(|mem| mem.close_popup());
-                    }
-                });
+    fn context_menu(
+        &mut self,
+        ui: &mut Ui,
+        tab: &mut Self::Tab,
+        surface: SurfaceIndex,
+        node: NodeIndex,
+    ) {
+        let popup_id = ui.make_persistent_id(format!("rename_tab_{}", tab.id()));
+        if ui.button("rename").clicked() {
+            ui.memory_mut(|mem| mem.open_popup(popup_id));
         }
+        egui::popup::popup_below_widget(
+            ui,
+            popup_id,
+            ui,
+            egui::PopupCloseBehavior::CloseOnClickOutside,
+            |ui| {
+                let title = tab.custom_title.get_or_insert_with(String::new);
+                let resp = ui.text_edit_singleline(title);
+                if resp.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+                    ui.memory_mut(|mem| mem.close_popup());
+                }
+
+                if !title.is_empty() {
+                    tab.custom_title = Some(title.clone())
+                };
+            },
+        );
     }
 
     fn closeable(&mut self, tab: &mut Self::Tab) -> bool {
