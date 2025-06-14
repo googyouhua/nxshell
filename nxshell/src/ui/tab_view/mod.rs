@@ -6,7 +6,7 @@ use crate::consts::GLOBAL_COUNTER;
 use crate::ui::tab_view::session::SessionList;
 use copypasta::ClipboardContext;
 use egui::{Label, Response, Sense, Ui};
-use egui_dock::{DockArea, Style};
+use egui_dock::{node_index::NodeIndex, surface_index::SurfaceIndex, DockArea, Style};
 use egui_phosphor::regular::{DRONE, NUMPAD};
 use egui_term::{
     Authentication, PtyEvent, TermType, Terminal, TerminalContext, TerminalOptions, TerminalTheme,
@@ -18,6 +18,8 @@ use std::sync::mpsc::Sender;
 use terminal::TerminalTab;
 use tracing::error;
 
+const TAB_BTN_WIDTH: f32 = 200.0;
+
 #[derive(PartialEq)]
 enum TabInner {
     Term(TerminalTab),
@@ -28,6 +30,10 @@ enum TabInner {
 pub struct Tab {
     inner: TabInner,
     id: u64,
+    custom_title: Option<String>,
+    show_rename_popup: bool,
+    rename_clear_focus: bool,
+    rename_buffer: String,
 }
 
 impl Tab {
@@ -56,6 +62,10 @@ impl Tab {
                 terminal_theme: TerminalTheme::default(),
                 term_type: typ,
             }),
+            custom_title: None,
+            show_rename_popup: false,
+            rename_clear_focus: false,
+            rename_buffer: String::new(),
         })
     }
 
@@ -65,6 +75,10 @@ impl Tab {
         Self {
             id,
             inner: TabInner::SessionList(SessionList {}),
+            custom_title: None,
+            show_rename_popup: false,
+            rename_clear_focus: false,
+            rename_buffer: String::new(),
         }
     }
 }
@@ -79,6 +93,9 @@ impl egui_dock::TabViewer for TabViewer<'_> {
     type Tab = Tab;
 
     fn title(&mut self, tab: &mut Self::Tab) -> egui::WidgetText {
+        if let Some(title) = &tab.custom_title {
+            return title.clone().into();
+        }
         let tab_id = tab.id();
         match &mut tab.inner {
             TabInner::Term(term) => match term.term_type {
@@ -106,34 +123,75 @@ impl egui_dock::TabViewer for TabViewer<'_> {
     }
 
     fn ui(&mut self, ui: &mut Ui, tab: &mut Self::Tab) {
-        match &mut tab.inner {
-            TabInner::Term(tab) => {
-                let term_ctx = TerminalContext::new(&mut tab.terminal, self.clipboard);
-                let term_opt = TerminalOptions {
-                    font: &mut self.options.term_font,
-                    multi_exec: &mut self.options.multi_exec,
-                    theme: &mut tab.terminal_theme,
-                    default_font_size: self.options.term_font_size,
-                    active_tab_id: &mut self.options.active_tab_id,
-                };
+        if tab.show_rename_popup { // TODO:
+            if tab.rename_clear_focus {
+                tab.rename_clear_focus = false;
+                tab.show_rename_popup = false;
+            } else {
+                let popup_id = egui::Id::new(format!("rename_tab_{}", tab.id()));
+                egui::Window::new("Rename Tab")
+                    .id(popup_id)
+                    .title_bar(true)
+                    .collapsible(false)
+                    .resizable(false)
+                    .anchor(egui::Align2::CENTER_CENTER, [0.0, 0.0])
+                    .open(&mut tab.show_rename_popup)
+                    .show(ui.ctx(), |ui| {
+                        ui.label("Please input a new name for the tab:");
+                        let resp = ui.text_edit_singleline(&mut tab.rename_buffer);
+                        ui.with_layout(egui::Layout::right_to_left(egui::Align::Min), |ui| {
+                            let btn_cancel = egui::Button::new("Cancel");
+                            if ui.add(btn_cancel).clicked() {
+                                tab.rename_clear_focus = true;
+                                tab.rename_buffer.clear();
+                            }
+                            let btn_ok = egui::Button::new("OK");
+                            if ui.add(btn_ok).clicked() {
+                                if !tab.rename_buffer.is_empty() {
+                                    tab.custom_title = Some(tab.rename_buffer.clone());
+                                }
+                                tab.rename_clear_focus = true;
+                            }
+                        });
 
-                let terminal = TerminalView::new(ui, term_ctx, term_opt)
-                    .set_focus(true)
-                    .set_size(ui.available_size());
-                ui.add(terminal);
+                        if resp.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+                            if !tab.rename_buffer.is_empty() {
+                                tab.custom_title = Some(tab.rename_buffer.clone());
+                            }
+                            tab.rename_clear_focus = true;
+                        }
+                    });
             }
-            TabInner::SessionList(_list) => {
-                ui.collapsing("Tab body", |ui| {
-                    ui.add(
-                        Label::new("Rounding")
-                            .sense(Sense::click())
-                            .selectable(false),
-                    );
-                    ui.separator();
+        } else {
+            match &mut tab.inner {
+                TabInner::Term(tab) => {
+                    let term_ctx = TerminalContext::new(&mut tab.terminal, self.clipboard);
+                    let term_opt = TerminalOptions {
+                        font: &mut self.options.term_font,
+                        multi_exec: &mut self.options.multi_exec,
+                        theme: &mut tab.terminal_theme,
+                        default_font_size: self.options.term_font_size,
+                        active_tab_id: &mut self.options.active_tab_id,
+                    };
 
-                    ui.label("Stroke color:");
-                    ui.label("Background color:");
-                });
+                    let terminal = TerminalView::new(ui, term_ctx, term_opt)
+                        .set_focus(true)
+                        .set_size(ui.available_size());
+                    ui.add(terminal);
+                }
+                TabInner::SessionList(_list) => {
+                    ui.collapsing("Tab body", |ui| {
+                        ui.add(
+                            Label::new("Rounding")
+                                .sense(Sense::click())
+                                .selectable(false),
+                        );
+                        ui.separator();
+
+                        ui.label("Stroke color:");
+                        ui.label("Background color:");
+                    });
+                }
             }
         }
     }
@@ -152,6 +210,24 @@ impl egui_dock::TabViewer for TabViewer<'_> {
                 }
             }
         }
+    }
+
+    fn context_menu(
+        &mut self,
+        ui: &mut Ui,
+        tab: &mut Self::Tab,
+        _surface: SurfaceIndex,
+        _node: NodeIndex,
+    ) {
+        ui.set_width(TAB_BTN_WIDTH);
+        if !tab.show_rename_popup {
+            let rename_btn_response = ui.button("rename");
+            if rename_btn_response.clicked() {
+                tab.show_rename_popup = true;
+                ui.close_menu();
+            }
+        }
+        ui.separator();
     }
 
     fn closeable(&mut self, tab: &mut Self::Tab) -> bool {
