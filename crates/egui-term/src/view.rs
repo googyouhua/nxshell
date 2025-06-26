@@ -5,6 +5,7 @@ use crate::font::TerminalFont;
 use crate::input::InputAction;
 use crate::theme::TerminalTheme;
 use crate::types::Size;
+use alacritty_terminal::grid::{Dimensions, Scroll};
 use alacritty_terminal::index::Point;
 use egui::ImeEvent;
 use egui::Widget;
@@ -22,6 +23,7 @@ pub struct TerminalViewState {
     pub cursor_position: Option<Pos2>,
     // ime_enabled: bool,
     // ime_cursor_range: CursorRange,
+    pub current_scroll_y_position: f32,
 }
 
 impl TerminalViewState {
@@ -53,6 +55,7 @@ pub struct TerminalOptions<'a> {
     pub multi_exec: &'a mut bool,
     pub theme: &'a mut TerminalTheme,
     pub active_tab_id: &'a mut Option<Id>,
+    pub viewport: egui::Rect,
 }
 
 impl Widget for TerminalView<'_> {
@@ -81,11 +84,32 @@ impl Widget for TerminalView<'_> {
             state.cursor_position = None;
             ui.close_menu();
         }
-
-        self.focus(&layout)
+        let scroll_y = self.options.viewport.min.y;
+        let font_size = self.options.font.font_size();
+        let mut term_set = self
+            .focus(&layout)
             .resize(&layout)
-            .process_input(&mut state, &layout)
-            .show(&mut state, &layout, &painter);
+            .process_input(&mut state, &layout);
+
+        let text_style = egui::TextStyle::Body;
+        let row_height = ui.text_style_height(&text_style);
+        let spacing = ui.spacing().item_spacing;
+        let row_height_with_spacing = row_height + spacing.y;
+        let grid = term_set.term_ctx.terminal.grid();
+        let total_rows = grid.total_lines();
+
+        ui.set_height(row_height_with_spacing * total_rows as f32 - spacing.y);
+
+        if scroll_y != state.current_scroll_y_position {
+            // 计算需要回滚的行数（正数为向下，负数为向上）
+            let delta = scroll_y - state.current_scroll_y_position;
+            let lines = (delta / font_size).trunc() as i32;
+            let scroll = Scroll::Delta(lines);
+            term_set.term_ctx.terminal.grid_mut().scroll_display(scroll);
+            state.current_scroll_y_position = scroll_y;
+        }
+
+        term_set.show(&mut state, &layout, &painter);
 
         state.store(ui.ctx(), widget_id);
         layout

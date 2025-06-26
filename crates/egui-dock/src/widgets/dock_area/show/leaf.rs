@@ -1251,7 +1251,7 @@ impl<Tab> DockArea<'_, Tab> {
                     StrokeKind::Inside,
                 );
 
-                ScrollArea::new(tab_viewer.scroll_bars(tab)).show(ui, |ui| {
+                ScrollArea::new(tab_viewer.scroll_bars(tab)).show_viewport(ui, |ui, viewport| {
                     Frame::NONE
                         .inner_margin(tabs_style.tab_body.inner_margin)
                         .show(ui, |ui| {
@@ -1260,7 +1260,7 @@ impl<Tab> DockArea<'_, Tab> {
                             }
                             let available_rect = ui.available_rect_before_wrap();
                             ui.expand_to_include_rect(available_rect);
-                            tab_viewer.ui(ui, tab);
+                            tab_viewer.ui(ui, tab, viewport);
                         });
                 });
             }

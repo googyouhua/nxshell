@@ -121,7 +121,7 @@ impl egui_dock::TabViewer for TabViewer<'_> {
         }
     }
 
-    fn ui(&mut self, ui: &mut Ui, tab: &mut Self::Tab) {
+    fn ui(&mut self, ui: &mut Ui, tab: &mut Self::Tab, viewport: egui::Rect) {
         match &mut tab.inner {
             TabInner::Term(tab) => {
                 let term_ctx = TerminalContext::new(&mut tab.terminal, self.clipboard);
@@ -131,12 +131,17 @@ impl egui_dock::TabViewer for TabViewer<'_> {
                     theme: &mut tab.terminal_theme,
                     default_font_size: self.options.term_font_size,
                     active_tab_id: &mut self.options.active_tab_id,
+                    viewport: viewport,
                 };
 
                 let terminal = TerminalView::new(ui, term_ctx, term_opt)
                     .set_focus(true)
                     .set_size(ui.available_size());
+
                 ui.add(terminal);
+
+                println!("min y x: {}:{}", viewport.min.y, viewport.min.x);
+                println!("max y x: {}:{}", viewport.max.y, viewport.max.x);
             }
             TabInner::SessionList(_list) => {
                 ui.collapsing("Tab body", |ui| {

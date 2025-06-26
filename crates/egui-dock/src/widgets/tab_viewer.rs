@@ -10,7 +10,7 @@ pub trait TabViewer {
     fn title(&mut self, tab: &mut Self::Tab) -> WidgetText;
 
     /// Actual tab content.
-    fn ui(&mut self, ui: &mut Ui, tab: &mut Self::Tab);
+    fn ui(&mut self, ui: &mut Ui, tab: &mut Self::Tab, viewport: egui::Rect);
 
     /// Content inside the context menu shown when the tab is right-clicked.
     ///
