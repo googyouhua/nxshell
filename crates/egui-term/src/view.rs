@@ -84,8 +84,6 @@ impl Widget for TerminalView<'_> {
             state.cursor_position = None;
             ui.close_menu();
         }
-        let scroll_y = self.options.viewport.min.y;
-        let font_size = self.options.font.font_size();
         let mut term_set = self
             .focus(&layout)
             .resize(&layout)
@@ -99,12 +97,13 @@ impl Widget for TerminalView<'_> {
         let total_rows = grid.total_lines();
 
         ui.set_height(row_height_with_spacing * total_rows as f32 - spacing.y);
-
+        let scroll_y = term_set.options.viewport.min.y;
         if scroll_y != state.current_scroll_y_position {
             // 计算需要回滚的行数（正数为向下，负数为向上）
+            let font_size = term_set.options.font.font_size();
             let delta = scroll_y - state.current_scroll_y_position;
             let lines = (delta / font_size).trunc() as i32;
-            let scroll = Scroll::Delta(lines);
+            let scroll = Scroll::Delta(-lines);
             term_set.term_ctx.terminal.grid_mut().scroll_display(scroll);
             state.current_scroll_y_position = scroll_y;
         }
