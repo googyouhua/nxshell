@@ -133,6 +133,9 @@ impl egui_dock::TabViewer for TabViewer<'_> {
                     active_tab_id: &mut self.options.active_tab_id,
                     row_range: &row_range,
                 };
+                println!("ui.available_size {}", ui.available_size());
+                println!("term_ctx.size.cell_width {}", term_ctx.size.cell_width);
+                println!("term_ctx.size.cell_width {}", term_ctx.size.cell_height);
 
                 let terminal = TerminalView::new(ui, term_ctx, term_opt)
                     .set_focus(true)

@@ -91,13 +91,6 @@ impl Widget for TerminalView<'_> {
             .resize(&layout)
             .process_input(&mut state, &layout);
 
-        let text_style = egui::TextStyle::Body;
-        let row_height = ui.text_style_height(&text_style);
-        let spacing = ui.spacing().item_spacing;
-        let row_height_with_spacing = row_height + spacing.y;
-        let grid = term_set.term_ctx.terminal.grid();
-        let total_rows = grid.total_lines();
-
         //ui.set_height(row_height_with_spacing * total_rows as f32 - spacing.y);
         let scroll_y = term_set.options.row_range.start;
         if scroll_y != state.current_scroll_y_position {

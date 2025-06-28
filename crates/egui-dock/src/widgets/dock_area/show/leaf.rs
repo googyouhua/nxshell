@@ -1265,7 +1265,7 @@ impl<Tab> DockArea<'_, Tab> {
                         .stick_to_bottom(true)
                         .show_rows(
                             ui,
-                            row_height - 3.0,
+                            row_height - spacing.y,
                             total_rows,
                             |ui, row_range: std::ops::Range<usize>| {
                                 println!("y2: {}", ui.available_height());
