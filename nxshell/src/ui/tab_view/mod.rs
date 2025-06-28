@@ -204,7 +204,7 @@ impl egui_dock::TabViewer for TabViewer<'_> {
     }
 
     fn get_scroll_row(&self, tab: &mut Self::Tab, y_min: f32) -> Option<usize> {
-            match &mut tab.inner {
+        match &mut tab.inner {
             TabInner::Term(tab) => {
                 let lines = TerminalContext::term_total_line(&mut tab.terminal, y_min as usize);
                 //let term = &tab.terminal.term.lock();
@@ -212,10 +212,8 @@ impl egui_dock::TabViewer for TabViewer<'_> {
                 //let lines = grid.total_lines();
                 //let lines = grid.scroll_display();//.map(|lines| lines as usize);
                 lines
-             }
-            TabInner::SessionList(_list) => {
-               None
             }
+            TabInner::SessionList(_list) => None,
         }
     }
 }

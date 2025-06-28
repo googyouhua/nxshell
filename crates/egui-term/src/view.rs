@@ -56,7 +56,6 @@ pub struct TerminalOptions<'a> {
     pub theme: &'a mut TerminalTheme,
     pub active_tab_id: &'a mut Option<Id>,
     pub row_range: &'a std::ops::Range<usize>,
-
 }
 
 impl Widget for TerminalView<'_> {
@@ -103,7 +102,7 @@ impl Widget for TerminalView<'_> {
         let scroll_y = term_set.options.row_range.start;
         if scroll_y != state.current_scroll_y_position {
             let lines = scroll_y as isize - state.current_scroll_y_position as isize;
-            println!("{}",lines);
+            println!("{}", lines);
             let scroll = Scroll::Delta((-lines) as i32);
             term_set.term_ctx.terminal.grid_mut().scroll_display(scroll);
             state.current_scroll_y_position = scroll_y;

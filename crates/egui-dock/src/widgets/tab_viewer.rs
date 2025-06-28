@@ -99,7 +99,7 @@ pub trait TabViewer {
     }
 
     /// Return content sizes
-    /// 
-    /// This is used to determine the size of the tab content area. 
-    fn get_scroll_row(&self, _tab: &mut Self::Tab, y_min: f32) -> Option<usize> ;
+    ///
+    /// This is used to determine the size of the tab content area.
+    fn get_scroll_row(&self, _tab: &mut Self::Tab, y_min: f32) -> Option<usize>;
 }
