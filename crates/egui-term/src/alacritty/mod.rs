@@ -295,7 +295,7 @@ impl<'a> TerminalContext<'a> {
 
     pub fn term_total_line(terminal: &'a mut Terminal, y_min: usize) -> Option<usize> {
         let term = terminal.term.lock();
-        let total_lines = term.grid().history_size().at_least(y_min);
+        let total_lines = term.grid().total_lines().at_least(y_min);
         println!("total_lines: {}", total_lines);
         Some(total_lines)
     }

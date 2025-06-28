@@ -1251,18 +1251,24 @@ impl<Tab> DockArea<'_, Tab> {
                     StrokeKind::Inside,
                 );
                 let y = ui.available_height();
+                let spacing = ui.spacing().item_spacing;
                 let text_style = egui::TextStyle::Body;
-                let row_height = ui.text_style_height(&text_style);
-                let y_min = row_height * y / row_height;
+                let row_height = ui.text_style_height(&text_style);// + spacing.y;
+                let y_min: f32 = y / row_height;
+                println!("y: {}", y);
+                println!("row_height: {}", row_height);
+                println!("spacing: {}", spacing);
                 if let Some(total_rows) = tab_viewer.get_scroll_row(tab, y_min) {
                     println!("total_rows: {}", total_rows);
                     ScrollArea::new(tab_viewer.scroll_bars(tab))
+                        .drag_to_scroll(false)
                         .stick_to_bottom(true)
                         .show_rows(
                             ui,
-                            row_height,
+                            row_height - 3.0,
                             total_rows,
                             |ui, row_range: std::ops::Range<usize>| {
+                                println!("y2: {}",  ui.available_height());
                                 Frame::NONE
                                     .inner_margin(tabs_style.tab_body.inner_margin)
                                     .show(ui, |ui| {
