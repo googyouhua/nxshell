@@ -121,7 +121,7 @@ impl egui_dock::TabViewer for TabViewer<'_> {
         }
     }
 
-    fn ui(&mut self, ui: &mut Ui, tab: &mut Self::Tab, viewport: egui::Rect) {
+    fn ui(&mut self, ui: &mut Ui, tab: &mut Self::Tab, row_range: std::ops::Range<usize>) {
         match &mut tab.inner {
             TabInner::Term(tab) => {
                 let term_ctx = TerminalContext::new(&mut tab.terminal, self.clipboard);
@@ -131,7 +131,7 @@ impl egui_dock::TabViewer for TabViewer<'_> {
                     theme: &mut tab.terminal_theme,
                     default_font_size: self.options.term_font_size,
                     active_tab_id: &mut self.options.active_tab_id,
-                    viewport: viewport,
+                    row_range: &row_range,
                 };
 
                 let terminal = TerminalView::new(ui, term_ctx, term_opt)
@@ -139,9 +139,6 @@ impl egui_dock::TabViewer for TabViewer<'_> {
                     .set_size(ui.available_size());
 
                 ui.add(terminal);
-
-                println!("min y x: {}:{}", viewport.min.y, viewport.min.x);
-                println!("max y x: {}:{}", viewport.max.y, viewport.max.x);
             }
             TabInner::SessionList(_list) => {
                 ui.collapsing("Tab body", |ui| {
@@ -203,6 +200,22 @@ impl egui_dock::TabViewer for TabViewer<'_> {
                 false
             }
             Ok(_) => true,
+        }
+    }
+
+    fn get_scroll_row(&self, tab: &mut Self::Tab, y_min: f32) -> Option<usize> {
+            match &mut tab.inner {
+            TabInner::Term(tab) => {
+                let lines = TerminalContext::term_total_line(&mut tab.terminal, y_min as usize);
+                //let term = &tab.terminal.term.lock();
+                //let grid = term.grid();
+                //let lines = grid.total_lines();
+                //let lines = grid.scroll_display();//.map(|lines| lines as usize);
+                lines
+             }
+            TabInner::SessionList(_list) => {
+               None
+            }
         }
     }
 }

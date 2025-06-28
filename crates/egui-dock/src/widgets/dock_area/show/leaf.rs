@@ -1250,19 +1250,25 @@ impl<Tab> DockArea<'_, Tab> {
                     tabs_style.tab_body.stroke,
                     StrokeKind::Inside,
                 );
-
-                ScrollArea::new(tab_viewer.scroll_bars(tab)).show_viewport(ui, |ui, viewport| {
-                    Frame::NONE
-                        .inner_margin(tabs_style.tab_body.inner_margin)
-                        .show(ui, |ui| {
-                            if fade_factor != 1.0 {
-                                fade_visuals(ui.visuals_mut(), fade_factor);
-                            }
-                            let available_rect = ui.available_rect_before_wrap();
-                            ui.expand_to_include_rect(available_rect);
-                            tab_viewer.ui(ui, tab, viewport);
-                        });
-                });
+                let y = ui.available_height();
+                let text_style = egui::TextStyle::Body;
+                let row_height = ui.text_style_height(&text_style);
+                let y_min = row_height * y / row_height;
+                if let Some(total_rows) = tab_viewer.get_scroll_row(tab, y_min) {
+println!("total_rows: {}", total_rows);
+                    ScrollArea::new(tab_viewer.scroll_bars(tab)).stick_to_bottom(true).show_rows(ui, row_height, total_rows, |ui, row_range: std::ops::Range<usize>| {
+                        Frame::NONE
+                            .inner_margin(tabs_style.tab_body.inner_margin)
+                            .show(ui, |ui| {
+                                if fade_factor != 1.0 {
+                                    fade_visuals(ui.visuals_mut(), fade_factor);
+                                }
+                                let available_rect = ui.available_rect_before_wrap();
+                                ui.expand_to_include_rect(available_rect);
+                                tab_viewer.ui(ui, tab, row_range);
+                            });
+                    });
+                }
             }
         }
 

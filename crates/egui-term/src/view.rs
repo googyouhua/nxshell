@@ -23,7 +23,7 @@ pub struct TerminalViewState {
     pub cursor_position: Option<Pos2>,
     // ime_enabled: bool,
     // ime_cursor_range: CursorRange,
-    pub current_scroll_y_position: f32,
+    pub current_scroll_y_position: usize,
 }
 
 impl TerminalViewState {
@@ -55,7 +55,8 @@ pub struct TerminalOptions<'a> {
     pub multi_exec: &'a mut bool,
     pub theme: &'a mut TerminalTheme,
     pub active_tab_id: &'a mut Option<Id>,
-    pub viewport: egui::Rect,
+    pub row_range: &'a std::ops::Range<usize>,
+
 }
 
 impl Widget for TerminalView<'_> {
@@ -64,6 +65,8 @@ impl Widget for TerminalView<'_> {
 
         let widget_id = self.widget_id;
         let mut state = TerminalViewState::load(ui.ctx(), widget_id);
+
+        println!("size: {}", self.size);
 
         if layout.contains_pointer() {
             *self.options.active_tab_id = Some(self.widget_id);
@@ -96,14 +99,12 @@ impl Widget for TerminalView<'_> {
         let grid = term_set.term_ctx.terminal.grid();
         let total_rows = grid.total_lines();
 
-        ui.set_height(row_height_with_spacing * total_rows as f32 - spacing.y);
-        let scroll_y = term_set.options.viewport.min.y;
+        //ui.set_height(row_height_with_spacing * total_rows as f32 - spacing.y);
+        let scroll_y = term_set.options.row_range.start;
         if scroll_y != state.current_scroll_y_position {
-            // 计算需要回滚的行数（正数为向下，负数为向上）
-            let font_size = term_set.options.font.font_size();
-            let delta = scroll_y - state.current_scroll_y_position;
-            let lines = (delta / font_size).trunc() as i32;
-            let scroll = Scroll::Delta(-lines);
+            let lines = scroll_y as isize - state.current_scroll_y_position as isize;
+            println!("{}",lines);
+            let scroll = Scroll::Delta((-lines) as i32);
             term_set.term_ctx.terminal.grid_mut().scroll_display(scroll);
             state.current_scroll_y_position = scroll_y;
         }

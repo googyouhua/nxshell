@@ -12,7 +12,7 @@ use alacritty_terminal::term::{cell::Cell, viewport_to_point, Config, Term, Term
 use alacritty_terminal::tty;
 use alacritty_terminal::tty::{EventedPty, Options};
 use copypasta::ClipboardContext;
-use egui::Modifiers;
+use egui::{Modifiers, NumExt};
 use parking_lot::MutexGuard;
 use std::borrow::Cow;
 use std::cmp::min;
@@ -291,6 +291,13 @@ impl<'a> TerminalContext<'a> {
             hovered_hyperlink: &mut terminal.hovered_hyperlink,
             clipboard,
         }
+    }
+
+    pub fn term_total_line(terminal: &'a mut Terminal, y_min: usize) -> Option<usize> {
+        let term = terminal.term.lock();
+        let total_lines = term.grid().history_size().at_least(y_min);
+        println!("total_lines: {}", total_lines);
+        Some(total_lines)
     }
 
     pub fn term_mode(&self) -> TermMode {

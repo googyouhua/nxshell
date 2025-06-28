@@ -10,7 +10,7 @@ pub trait TabViewer {
     fn title(&mut self, tab: &mut Self::Tab) -> WidgetText;
 
     /// Actual tab content.
-    fn ui(&mut self, ui: &mut Ui, tab: &mut Self::Tab, viewport: egui::Rect);
+    fn ui(&mut self, ui: &mut Ui, tab: &mut Self::Tab, row_range: std::ops::Range<usize>);
 
     /// Content inside the context menu shown when the tab is right-clicked.
     ///
@@ -97,4 +97,9 @@ pub trait TabViewer {
     fn scroll_bars(&self, _tab: &Self::Tab) -> [bool; 2] {
         [true, true]
     }
+
+    /// Return content sizes
+    /// 
+    /// This is used to determine the size of the tab content area. 
+    fn get_scroll_row(&self, _tab: &mut Self::Tab, y_min: f32) -> Option<usize> ;
 }
