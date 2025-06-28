@@ -1253,7 +1253,7 @@ impl<Tab> DockArea<'_, Tab> {
                 let y = ui.available_height();
                 let spacing = ui.spacing().item_spacing;
                 let text_style = egui::TextStyle::Body;
-                let row_height = ui.text_style_height(&text_style);// + spacing.y;
+                let row_height = ui.text_style_height(&text_style); // + spacing.y;
                 let y_min: f32 = y / row_height;
                 println!("y: {}", y);
                 println!("row_height: {}", row_height);
@@ -1268,7 +1268,7 @@ impl<Tab> DockArea<'_, Tab> {
                             row_height - 3.0,
                             total_rows,
                             |ui, row_range: std::ops::Range<usize>| {
-                                println!("y2: {}",  ui.available_height());
+                                println!("y2: {}", ui.available_height());
                                 Frame::NONE
                                     .inner_margin(tabs_style.tab_body.inner_margin)
                                     .show(ui, |ui| {
