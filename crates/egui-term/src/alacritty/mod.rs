@@ -277,11 +277,13 @@ pub struct TerminalContext<'a> {
     pub notifier: &'a mut Notifier,
     pub hovered_hyperlink: &'a mut Option<Match>,
     pub clipboard: &'a mut ClipboardContext,
+    pub total_lines: usize,
 }
 
 impl<'a> TerminalContext<'a> {
     pub fn new(terminal: &'a mut Terminal, clipboard: &'a mut ClipboardContext) -> Self {
         let term = terminal.term.lock();
+        let total_lines = term.grid().total_lines().at_least(0);
         Self {
             id: terminal.id,
             terminal: term,
@@ -290,14 +292,8 @@ impl<'a> TerminalContext<'a> {
             notifier: &mut terminal.notifier,
             hovered_hyperlink: &mut terminal.hovered_hyperlink,
             clipboard,
+            total_lines,
         }
-    }
-
-    pub fn term_total_line(terminal: &'a mut Terminal, y_min: usize) -> Option<usize> {
-        let term = terminal.term.lock();
-        let total_lines = term.grid().total_lines().at_least(y_min);
-        println!("total_lines: {}", total_lines);
-        Some(total_lines)
     }
 
     pub fn term_mode(&self) -> TermMode {

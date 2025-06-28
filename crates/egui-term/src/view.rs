@@ -5,7 +5,7 @@ use crate::font::TerminalFont;
 use crate::input::InputAction;
 use crate::theme::TerminalTheme;
 use crate::types::Size;
-use alacritty_terminal::grid::{Dimensions, Scroll};
+use alacritty_terminal::grid::Scroll;
 use alacritty_terminal::index::Point;
 use egui::ImeEvent;
 use egui::Widget;
@@ -65,8 +65,6 @@ impl Widget for TerminalView<'_> {
         let widget_id = self.widget_id;
         let mut state = TerminalViewState::load(ui.ctx(), widget_id);
 
-        println!("size: {}", self.size);
-
         if layout.contains_pointer() {
             *self.options.active_tab_id = Some(self.widget_id);
             layout.ctx.set_cursor_icon(CursorIcon::Text);
@@ -95,7 +93,6 @@ impl Widget for TerminalView<'_> {
         let scroll_y = term_set.options.row_range.start;
         if scroll_y != state.current_scroll_y_position {
             let lines = scroll_y as isize - state.current_scroll_y_position as isize;
-            println!("{}", lines);
             let scroll = Scroll::Delta((-lines) as i32);
             term_set.term_ctx.terminal.grid_mut().scroll_display(scroll);
             state.current_scroll_y_position = scroll_y;
