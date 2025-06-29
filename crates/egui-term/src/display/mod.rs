@@ -24,7 +24,8 @@ impl TerminalView<'_> {
         let cell_width = self.term_ctx.size.cell_width as f32;
 
         let global_bg = self.theme().get_color(Color::Named(NamedColor::Background));
-
+        println!("layout_min:{}", layout_min);
+        println!("layout_max:{}", layout_max);
         let mut shapes = vec![Shape::Rect(RectShape::filled(
             Rect::from_min_max(layout_min, layout_max),
             CornerRadius::ZERO,

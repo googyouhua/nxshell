@@ -133,7 +133,6 @@ impl egui_dock::TabViewer for TabViewer<'_> {
                 let total_rows = term_ctx.total_lines.at_least(y_min as usize);
                 let ui_height = cell_height * total_rows as f32;
                 ui.set_height(ui_height);
-                //println!("total_rows:{}", total_rows);
                 let mut min_row = (viewport.min.y / cell_height).floor() as usize;
                 let mut max_row = (viewport.max.y / cell_height).ceil() as usize + 1;
                 if max_row > total_rows {
@@ -142,35 +141,24 @@ impl egui_dock::TabViewer for TabViewer<'_> {
                     min_row = total_rows.saturating_sub(diff);
                 }
 
-                let y_min = ui.max_rect().top() + min_row as f32 * cell_height;
-                let y_max = ui.max_rect().top() + max_row as f32 * cell_height;
-
-                // TODO: x axis
-                let rect = egui::Rect::from_x_y_ranges(ui.max_rect().x_range(), y_min..=y_max);
                 let available_size = ui.available_size();
-                ui.allocate_new_ui(UiBuilder::new().max_rect(rect), |viewport_ui| {
-                    let row_range = min_row..max_row;
-                    let term_opt = TerminalOptions {
-                        font: &mut self.options.term_font,
-                        multi_exec: &mut self.options.multi_exec,
-                        theme: &mut tab.terminal_theme,
-                        default_font_size: self.options.term_font_size,
-                        active_tab_id: &mut self.options.active_tab_id,
-                        row_range: &row_range,
-                    };
+                //ui.allocate_new_ui(UiBuilder::new().max_rect(rect), |viewport_ui| {
+                let row_range = min_row..max_row;
+                let term_opt = TerminalOptions {
+                    font: &mut self.options.term_font,
+                    multi_exec: &mut self.options.multi_exec,
+                    theme: &mut tab.terminal_theme,
+                    default_font_size: self.options.term_font_size,
+                    active_tab_id: &mut self.options.active_tab_id,
+                    row_range: &row_range,
+                };
 
-                    viewport_ui.skip_ahead_auto_ids(min_row); // Make sure we get consistent IDs.
-                    let terminal = TerminalView::new(viewport_ui, term_ctx, term_opt)
-                        .set_focus(true)
-                        .set_size(available_size);
+                //ui.skip_ahead_auto_ids(min_row); // Make sure we get consistent IDs.
+                let terminal = TerminalView::new(ui, term_ctx, term_opt)
+                    .set_focus(true)
+                    .set_size(available_size);
 
-                    viewport_ui.add(terminal);
-
-                    /*if viewport_ui.input(|i| i.key_pressed(egui::Key::Enter)) {
-                        //viewport_ui.scroll_with_delta(64.0 * egui::Vec2::DOWN);
-                        //scroll_to_me(Some(egui::Align::Center))
-                    }*/
-                });
+                ui.add(terminal);
             }
             TabInner::SessionList(_list) => {
                 ui.collapsing("Tab body", |ui| {

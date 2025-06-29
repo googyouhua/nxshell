@@ -95,6 +95,6 @@ pub trait TabViewer {
     ///
     /// By default, both scroll bars are shown.
     fn scroll_bars(&self, _tab: &Self::Tab) -> [bool; 2] {
-        [true, true]
+        [false, true]
     }
 }
