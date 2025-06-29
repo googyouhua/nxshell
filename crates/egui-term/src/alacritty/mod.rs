@@ -537,7 +537,7 @@ impl<'a> TerminalContext<'a> {
 
     fn scroll(&mut self, delta_value: i32) {
         if delta_value != 0 {
-            //let scroll = Scroll::Delta(delta_value);
+            let scroll = Scroll::Delta(delta_value);
             if self
                 .terminal
                 .mode()
@@ -554,7 +554,7 @@ impl<'a> TerminalContext<'a> {
 
                 self.notifier.notify(content);
             } else {
-                //self.terminal.grid_mut().scroll_display(scroll);
+                self.terminal.grid_mut().scroll_display(scroll);
             }
         }
     }

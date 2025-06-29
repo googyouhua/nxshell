@@ -23,7 +23,6 @@ pub struct TerminalViewState {
     pub cursor_position: Option<Pos2>,
     // ime_enabled: bool,
     // ime_cursor_range: CursorRange,
-    pub current_scroll_y_position: usize,
 }
 
 impl TerminalViewState {
@@ -55,7 +54,6 @@ pub struct TerminalOptions<'a> {
     pub multi_exec: &'a mut bool,
     pub theme: &'a mut TerminalTheme,
     pub active_tab_id: &'a mut Option<Id>,
-    pub row_range: &'a std::ops::Range<usize>,
 }
 
 impl Widget for TerminalView<'_> {
@@ -84,21 +82,11 @@ impl Widget for TerminalView<'_> {
             state.cursor_position = None;
             ui.close_menu();
         }
-        let mut term_set = self
-            .focus(&layout)
+
+        self.focus(&layout)
             .resize(&layout)
-            .process_input(&mut state, &layout);
-
-        //ui.set_height(row_height_with_spacing * total_rows as f32 - spacing.y);
-        let scroll_y = term_set.options.row_range.start;
-        if scroll_y != state.current_scroll_y_position {
-            let lines = scroll_y as isize - state.current_scroll_y_position as isize;
-            let scroll = Scroll::Delta((-lines) as i32);
-            term_set.term_ctx.terminal.grid_mut().scroll_display(scroll);
-            state.current_scroll_y_position = scroll_y;
-        }
-
-        term_set.show(&mut state, &layout, &painter);
+            .process_input(&mut state, &layout)
+            .show(&mut state, &layout, &painter);
 
         state.store(ui.ctx(), widget_id);
         layout

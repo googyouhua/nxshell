@@ -133,30 +133,19 @@ impl egui_dock::TabViewer for TabViewer<'_> {
                 let total_rows = term_ctx.total_lines.at_least(y_min as usize);
                 let ui_height = cell_height * total_rows as f32;
                 ui.set_height(ui_height);
-                let mut min_row = (viewport.min.y / cell_height).floor() as usize;
-                let mut max_row = (viewport.max.y / cell_height).ceil() as usize + 1;
-                if max_row > total_rows {
-                    let diff = max_row.saturating_sub(min_row);
-                    max_row = total_rows;
-                    min_row = total_rows.saturating_sub(diff);
-                }
 
-                let available_size = ui.available_size();
-                //ui.allocate_new_ui(UiBuilder::new().max_rect(rect), |viewport_ui| {
-                let row_range = min_row..max_row;
                 let term_opt = TerminalOptions {
                     font: &mut self.options.term_font,
                     multi_exec: &mut self.options.multi_exec,
                     theme: &mut tab.terminal_theme,
                     default_font_size: self.options.term_font_size,
                     active_tab_id: &mut self.options.active_tab_id,
-                    row_range: &row_range,
                 };
 
                 //ui.skip_ahead_auto_ids(min_row); // Make sure we get consistent IDs.
                 let terminal = TerminalView::new(ui, term_ctx, term_opt)
                     .set_focus(true)
-                    .set_size(available_size);
+                    .set_size(ui.available_size());
 
                 ui.add(terminal);
             }
