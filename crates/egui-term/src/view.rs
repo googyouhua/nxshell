@@ -5,6 +5,7 @@ use crate::font::TerminalFont;
 use crate::input::InputAction;
 use crate::theme::TerminalTheme;
 use crate::types::Size;
+use alacritty_terminal::grid::Scroll;
 use alacritty_terminal::index::Point;
 use egui::ImeEvent;
 use egui::Widget;

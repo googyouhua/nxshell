@@ -5,7 +5,7 @@ use crate::app::{NxShell, NxShellOptions};
 use crate::consts::GLOBAL_COUNTER;
 use crate::ui::tab_view::session::SessionList;
 use copypasta::ClipboardContext;
-use egui::{Label, Order, Response, Sense, Ui};
+use egui::{Label, NumExt, Order, Response, Sense, Ui, UiBuilder};
 use egui_dock::{node_index::NodeIndex, surface_index::SurfaceIndex, DockArea, Style};
 use egui_phosphor::regular::{DRONE, NUMPAD};
 use egui_term::{
@@ -121,10 +121,19 @@ impl egui_dock::TabViewer for TabViewer<'_> {
         }
     }
 
-    fn ui(&mut self, ui: &mut Ui, tab: &mut Self::Tab) {
+    fn ui(&mut self, ui: &mut Ui, tab: &mut Self::Tab, viewport: &egui::Rect) {
         match &mut tab.inner {
             TabInner::Term(tab) => {
                 let term_ctx = TerminalContext::new(&mut tab.terminal, self.clipboard);
+
+                let cell_height = term_ctx.size.cell_height as f32;
+                //let cell_width = term_ctx.size.cell_width;
+                let y = ui.available_height();
+                let y_min = y / cell_height;
+                let total_rows = term_ctx.total_lines.at_least(y_min as usize);
+                let ui_height = cell_height * total_rows as f32;
+                ui.set_height(ui_height);
+
                 let term_opt = TerminalOptions {
                     font: &mut self.options.term_font,
                     multi_exec: &mut self.options.multi_exec,
@@ -133,9 +142,11 @@ impl egui_dock::TabViewer for TabViewer<'_> {
                     active_tab_id: &mut self.options.active_tab_id,
                 };
 
+                //ui.skip_ahead_auto_ids(min_row); // Make sure we get consistent IDs.
                 let terminal = TerminalView::new(ui, term_ctx, term_opt)
                     .set_focus(true)
                     .set_size(ui.available_size());
+
                 ui.add(terminal);
             }
             TabInner::SessionList(_list) => {
