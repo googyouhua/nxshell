@@ -5,6 +5,7 @@ use crate::font::TerminalFont;
 use crate::input::InputAction;
 use crate::theme::TerminalTheme;
 use crate::types::Size;
+use alacritty_terminal::grid::Dimensions;
 use alacritty_terminal::index::Point;
 use egui::ImeEvent;
 use egui::Widget;
@@ -57,7 +58,15 @@ pub struct TerminalOptions<'a> {
 
 impl Widget for TerminalView<'_> {
     fn ui(mut self, ui: &mut egui::Ui) -> Response {
-        let (layout, painter) = ui.allocate_painter(self.size, egui::Sense::click());
+        println!("available_size : {}", ui.available_size());
+        println!("self.size : {}", self.size);
+
+        //let (layout, painter) = ui.allocate_painter(self.size, egui::Sense::click());
+        //let painter = ui.painter();
+        let layout = ui.response();
+
+        println!("========");
+        println!("2  available_size : {}", ui.available_size());
 
         let widget_id = self.widget_id;
         let mut state = TerminalViewState::load(ui.ctx(), widget_id);
@@ -82,11 +91,29 @@ impl Widget for TerminalView<'_> {
             ui.close_menu();
         }
 
-        self.focus(&layout)
+        let term = self
+            .focus(&layout)
             .resize(&layout)
-            .process_input(&mut state, &layout)
-            .show(&mut state, &layout, &painter);
+            .process_input(&mut state, &layout);
 
+        let cell_height = term.term_ctx.size.cell_height as f32;
+        let grid = term.term_ctx.terminal.grid();
+        let total_rows = grid.total_lines() as f32;
+        println!("cell_height * total_rows : {}", cell_height * total_rows);
+        println!("total_rows : {}", total_rows);
+        println!("cell_height : {}", cell_height);
+        ui.set_height(cell_height * total_rows);
+
+        /*if ui.input(|i| i.key_pressed(egui::Key::Enter)) {
+            println!("Enter");
+            ui.allocate_exact_size(egui::vec2(term.size.x, cell_height), egui::Sense::click()); // make sure we take up some height
+            ui.end_row();
+        }*/
+        //ui.set_row_height(cell_height);
+
+        term.show(&mut state, &layout, ui.painter());
+
+        println!("3  available_size : {}", ui.available_size());
         state.store(ui.ctx(), widget_id);
         layout
     }

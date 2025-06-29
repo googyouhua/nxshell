@@ -1251,18 +1251,20 @@ impl<Tab> DockArea<'_, Tab> {
                     StrokeKind::Inside,
                 );
 
-                ScrollArea::new(tab_viewer.scroll_bars(tab)).show(ui, |ui| {
-                    Frame::NONE
-                        .inner_margin(tabs_style.tab_body.inner_margin)
-                        .show(ui, |ui| {
-                            if fade_factor != 1.0 {
-                                fade_visuals(ui.visuals_mut(), fade_factor);
-                            }
-                            let available_rect = ui.available_rect_before_wrap();
-                            ui.expand_to_include_rect(available_rect);
-                            tab_viewer.ui(ui, tab);
-                        });
-                });
+                ScrollArea::new(tab_viewer.scroll_bars(tab))
+                    .stick_to_bottom(true)
+                    .show(ui, |ui| {
+                        Frame::NONE
+                            .inner_margin(tabs_style.tab_body.inner_margin)
+                            .show(ui, |ui| {
+                                if fade_factor != 1.0 {
+                                    fade_visuals(ui.visuals_mut(), fade_factor);
+                                }
+                                let available_rect = ui.available_rect_before_wrap();
+                                ui.expand_to_include_rect(available_rect);
+                                tab_viewer.ui(ui, tab);
+                            });
+                    });
             }
         }
 
