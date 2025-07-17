@@ -128,13 +128,20 @@ impl TerminalView<'_> {
         position: Pos2,
         modifiers: &Modifiers,
         pressed: bool,
+        out_of_terminal: bool,
     ) -> Option<InputAction> {
         match button {
             PointerButton::Primary => {
-                self.left_button_click(state, layout, position, modifiers, pressed)
+                if pressed && out_of_terminal {
+                    return None;
+                } else {
+                    self.left_button_click(state, layout, position, modifiers, pressed)
+                }
             }
             PointerButton::Secondary => {
-                state.cursor_position = Some(position);
+                if out_of_terminal == false {
+                    state.cursor_position = Some(position);
+                }
                 None
             }
             _ => None,
