@@ -99,6 +99,6 @@ impl InteractiveScrollbar {
         }
         */
 
-        ui.ctx().request_repaint();
+        //ui.ctx().request_repaint();
     }
 }
