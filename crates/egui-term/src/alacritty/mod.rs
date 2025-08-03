@@ -10,7 +10,7 @@ use alacritty_terminal::sync::FairMutex;
 use alacritty_terminal::term::search::{Match, RegexIter, RegexSearch};
 use alacritty_terminal::term::{cell::Cell, viewport_to_point, Config, Term, TermMode};
 use alacritty_terminal::tty;
-use alacritty_terminal::tty::{EventedPty, Options};
+use alacritty_terminal::tty::{EventedPty, Options, Shell};
 use copypasta::ClipboardContext;
 use egui::Modifiers;
 use parking_lot::MutexGuard;
@@ -161,7 +161,10 @@ impl Terminal {
     ) -> Result<Self, TermError> {
         match term_type {
             TermType::Regular { working_directory } => {
+                let shell =
+                    Shell::new("wsl".to_string(), vec!["--cd".to_string(), "~".to_string()]);
                 let opts = Options {
+                    shell: Some(shell),
                     working_directory,
                     ..Default::default()
                 };
