@@ -161,8 +161,11 @@ impl Terminal {
     ) -> Result<Self, TermError> {
         match term_type {
             TermType::Regular { working_directory } => {
+                let shell =
+                    Shell::new("wsl".to_string(), vec!["--cd".to_string(), "~".to_string()]);
                 let opts = Options {
                     working_directory,
+                    shell,
                     ..Default::default()
                 };
                 Self::new_with_pty(
