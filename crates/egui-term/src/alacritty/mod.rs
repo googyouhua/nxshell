@@ -165,7 +165,7 @@ impl Terminal {
                     Shell::new("wsl".to_string(), vec!["--cd".to_string(), "~".to_string()]);
                 let opts = Options {
                     working_directory,
-                    shell,
+                    Some(shell),
                     ..Default::default()
                 };
                 Self::new_with_pty(
