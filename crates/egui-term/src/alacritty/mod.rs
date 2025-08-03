@@ -10,7 +10,7 @@ use alacritty_terminal::sync::FairMutex;
 use alacritty_terminal::term::search::{Match, RegexIter, RegexSearch};
 use alacritty_terminal::term::{cell::Cell, viewport_to_point, Config, Term, TermMode};
 use alacritty_terminal::tty;
-use alacritty_terminal::tty::{EventedPty, Options};
+use alacritty_terminal::tty::{EventedPty, Options, Shell};
 use copypasta::ClipboardContext;
 use egui::Modifiers;
 use parking_lot::MutexGuard;
